@@ -126,31 +126,18 @@
       getBalance: function() {
         return this.transactions.map((value, index) => {
           const currentBalance = index === 0 ? this.collective1.initialBalance : this.transactions[index - 1].balance;
-
-          console.log(`###transaction ${value.date} `)
           value.balance = Object.keys(value.fees).reduce((prev, fee) => {
-            console.log(`before fee ${fee} `, currentBalance, value.amount, prev, 'fixed', value.fees[fee].fixed, 'percentage', value.fees[fee].percentage)
+            const negative = prev <= 0;
+            const operator = negative ? 1 : -1;
 
-            const negative = prev > 0 ? false : true;
             prev = Math.abs(prev);
 
             if (value.fees[fee].percentage) {
-              if (negative) {
-                prev += Math.abs(value.amount) * value.fees[fee].percentage;
-              } else {
-                prev -= Math.abs(value.amount) * value.fees[fee].percentage;
-              }
-              // prev -= Math.abs(value.amount) * value.fees[fee].percentage;
-              console.log('after percentage', prev)
+              prev = prev + operator * Math.abs(value.amount) * value.fees[fee].percentage;
             }
 
             if (value.fees[fee].fixed) {
-              if (negative) {
-                prev += value.fees[fee].fixed;
-              } else {
-                prev -= value.fees[fee].fixed;
-              }
-              console.log('after fixed', prev)
+              prev = prev + operator * value.fees[fee].fixed;
             }
 
             return negative ? -prev : prev;
