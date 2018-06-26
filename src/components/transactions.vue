@@ -59,6 +59,64 @@
               }
             }
           },
+          {
+            type: 'expense',
+            from: 'collective1',
+            to: 'user2',
+            amount: -10,
+            currency: 'usd',
+            date: +new Date(),
+            fees: {
+              paypal: {
+                fixed: 0.30,
+                percentage: 0.029
+              }
+            }
+          },
+
+          {
+            type: 'expense',
+            from: 'collective1',
+            to: 'user2',
+            amount: -30,
+            currency: 'usd',
+            date: +new Date(),
+            fees: {
+              paypal: {
+                fixed: 0.30,
+                percentage: 0.029
+              }
+            }
+          },
+          {
+            type: 'expense',
+            from: 'collective1',
+            to: 'user2',
+            amount: -30,
+            currency: 'usd',
+            date: +new Date(),
+            fees: {
+              paypal: {
+                fixed: 0.30,
+                percentage: 0.029
+              }
+            }
+          },
+          {
+            type: 'expense',
+            from: 'collective1',
+            to: 'user2',
+            amount: -30,
+            currency: 'usd',
+            date: +new Date(),
+            fees: {
+              paypal: {
+                fixed: 0.30,
+                percentage: 0.029
+              }
+            }
+          }
+
         ],
         balance: []
       }
@@ -66,33 +124,39 @@
 
     methods: {
       getBalance: function() {
-
-        console.log('???')
-
         return this.transactions.map((value, index) => {
           const currentBalance = index === 0 ? this.collective1.initialBalance : this.transactions[index - 1].balance;
 
           console.log(`###transaction ${value.date} `)
+          value.balance = Object.keys(value.fees).reduce((prev, fee) => {
+            console.log(`before fee ${fee} `, currentBalance, value.amount, prev, 'fixed', value.fees[fee].fixed, 'percentage', value.fees[fee].percentage)
 
-          let amount = Object.keys(value.fees).reduce((prev, fee) => {
+            const negative = prev > 0 ? false : true;
+            prev = Math.abs(prev);
 
-            console.log(`before fee ${fee} `, prev, 'fixed', value.fees[fee].fixed,  'percentage', value.fees[fee].percentage)
             if (value.fees[fee].percentage) {
-              prev -= prev*value.fees[fee].percentage;
+              if (negative) {
+                prev += Math.abs(value.amount) * value.fees[fee].percentage;
+              } else {
+                prev -= Math.abs(value.amount) * value.fees[fee].percentage;
+              }
+              // prev -= Math.abs(value.amount) * value.fees[fee].percentage;
+              console.log('after percentage', prev)
             }
 
             if (value.fees[fee].fixed) {
-              prev -= value.fees[fee].fixed;
+              if (negative) {
+                prev += value.fees[fee].fixed;
+              } else {
+                prev -= value.fees[fee].fixed;
+              }
+              console.log('after fixed', prev)
             }
 
-            return prev;
-
-          }, value.amount);
-
-          value.balance = amount;
+            return negative ? -prev : prev;
+          }, currentBalance + value.amount);
 
           return value;
-
         });
 
       }
